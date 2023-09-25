@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import './App.css';
 import { AUTH_PATH, BOARD_DETAIL_PATH, BOARD_UPDATE_PATH, BOARD_WRITE_PATH, MAIN_PATH, SEARCH_PATH, USER_PATH } from 'constant';
 import Main from 'views/Main';
@@ -11,21 +11,46 @@ import User from 'views/User';
 import Container from 'layouts/Container';
 import { useEffect } from 'react';
 import axios from 'axios';
+import { useCookies } from 'react-cookie';
+import { useUserStore } from 'stores';
+import GetSignInUserResponseDto from 'apis/dto/response/auth/get-sign-in-user-response.dto';
 
 function App() {
 
-  const serverCheck = async () => {
-    const response = await axios.get("http://localhost:4000");
-    return response.data;
-  };
+//        state: cooke 상태        //
+const {pathname} = useLocation();
+
+//        state: cooke 상태        //
+  const {user, setUser } = useUserStore();
+
+  //        state: cooke 상태        //
+const [cookies, setCookie] = useCookies();
+
+//       function: get sign in user response 처리 함수    //
+const getSignInUserResponse = (responseBody:GetSignInUserResponseDto | ResponseDto) => {
+  const {code} = responseBody;
+  if(code !== 'SU') {
+    setCookie('accessToken', '', {expires: new Date(), path: MAIN_PATH});
+    setUser(null);
+    return;
+  }
+
+  setUser({ ...responseBody as GetSignInUserResponseDto});
+
+}
+//       effect: 현재 path가 변경될 때 마다 실행될 함수    //
 
   useEffect(() => {
-    serverCheck()
-      .then(data => console.log(data))
-      .catch((error) => {
-        console.log(error.response.data);
-      });
-  }, []);
+    const accessToken = cookies.accessToken;
+    if (!accessToken) {
+      setUser(null);
+      return;
+    }
+    
+    getSignInRequest(accessToken).then(getSignInRequest)
+
+
+  }, [pathname]);
 
   return (
     <Routes>
