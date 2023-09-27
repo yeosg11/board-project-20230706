@@ -11,34 +11,33 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
-@Component // 제어 역전 //
+@Component
 public class JwtProvider {
-
+    
     @Value("${secret-key}")
     private String secretKey;
 
     public String create(String email) {
-        Date expiration = Date.from(Instant.now().plus(5,ChronoUnit.HOURS));
+        Date expiration = Date.from(Instant.now().plus(5, ChronoUnit.HOURS));
 
         String jwt = Jwts.builder()
-                        .signWith(SignatureAlgorithm.HS256,secretKey)
+                        .signWith(SignatureAlgorithm.HS256, secretKey)
                         .setSubject(email).setIssuedAt(new Date()).setExpiration(expiration)
                         .compact();
 
         return jwt;
-
     }
-    
-    public String validate(String jwt) {
-        String email = null;
 
+    public String validate(String jwt) {
+
+        String email = null;
         try {
 
             Claims claims = Jwts.parser()
                                 .setSigningKey(secretKey)
                                 .parseClaimsJws(jwt)
                                 .getBody();
-            
+
             email = claims.getSubject();
 
         } catch (Exception exception) {
@@ -49,4 +48,5 @@ public class JwtProvider {
         return email;
 
     }
+
 }

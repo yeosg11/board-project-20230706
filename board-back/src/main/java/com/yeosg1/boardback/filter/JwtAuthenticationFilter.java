@@ -7,8 +7,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.tomcat.util.http.parser.Authorization;
-import org.aspectj.lang.annotation.RequiredTypes;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -18,7 +16,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 
 import com.yeosg1.boardback.provider.JwtProvider;
 
@@ -33,8 +30,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
-        try{
+        
+        try {
 
             String token = parseBearerToken(request);
             if (token == null) {
@@ -43,30 +40,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             String email = jwtProvider.validate(token);
-            if (email==null) {
+            if (email == null) {
                 filterChain.doFilter(request, response);
                 return;
             }
 
             AbstractAuthenticationToken authenticationToken
-            = new UsernamePasswordAuthenticationToken(email, null, AuthorityUtils.NO_AUTHORITIES);
+                = new UsernamePasswordAuthenticationToken(email, null, AuthorityUtils.NO_AUTHORITIES);
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
             SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
             securityContext.setAuthentication(authenticationToken);
             SecurityContextHolder.setContext(securityContext);
 
-
-        }catch(Exception exception) {
+        } catch(Exception exception) {
             exception.printStackTrace();
         }
-               
+
         filterChain.doFilter(request, response);
+
     }
-    
+
     private String parseBearerToken(HttpServletRequest request) {
 
-        String authorization = request.getHeader("Authorization");  // name은 입력하는게 아님 //
+        String authorization = request.getHeader("Authorization");
 
         boolean hasAuthorization = StringUtils.hasText(authorization);
         if (!hasAuthorization) return null;
@@ -78,4 +75,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return token;
 
     }
+    
 }

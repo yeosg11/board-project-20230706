@@ -10,46 +10,45 @@ import BoardWrite from 'views/Board/Write';
 import User from 'views/User';
 import Container from 'layouts/Container';
 import { useEffect } from 'react';
-import axios from 'axios';
 import { useCookies } from 'react-cookie';
 import { useUserStore } from 'stores';
-import GetSignInUserResponseDto from 'apis/dto/response/auth/get-sign-in-user-response.dto';
+import { getSignInUserRequest } from 'apis';
+import { GetSignInUserResponseDto } from 'apis/dto/response/user';
+import ResponseDto from 'apis/dto/response';
 
 function App() {
 
-//        state: cooke 상태        //
-const {pathname} = useLocation();
+  //          state: 현재 페이지 url 상태          //
+  const { pathname } = useLocation();
+  //          state: 로그인 유저 상태          //
+  const { user, setUser } = useUserStore();
+  //          state: cookie 상태          //
+  const [cookies, setCookie] = useCookies();
 
-//        state: cooke 상태        //
-  const {user, setUser } = useUserStore();
+  //          function: get sign in user response 처리 함수 //
+  const getSignInUserResponse = (responseBody: GetSignInUserResponseDto | ResponseDto) => {
+    const { code } = responseBody;
+    if (code !== 'SU') {
+      setCookie('accessToken', '', { expires: new Date(), path: MAIN_PATH });
+      setUser(null);
+      return;
+    }
 
-  //        state: cooke 상태        //
-const [cookies, setCookie] = useCookies();
-
-//       function: get sign in user response 처리 함수    //
-const getSignInUserResponse = (responseBody:GetSignInUserResponseDto | ResponseDto) => {
-  const {code} = responseBody;
-  if(code !== 'SU') {
-    setCookie('accessToken', '', {expires: new Date(), path: MAIN_PATH});
-    setUser(null);
-    return;
+    setUser({ ...responseBody as GetSignInUserResponseDto });
+      
   }
 
-  setUser({ ...responseBody as GetSignInUserResponseDto});
-
-}
-//       effect: 현재 path가 변경될 때 마다 실행될 함수    //
-
+  //          effect: 현재 path가 변경될 때마다 실행될 함수          //
   useEffect(() => {
+
     const accessToken = cookies.accessToken;
     if (!accessToken) {
       setUser(null);
       return;
     }
+
+    getSignInUserRequest(accessToken).then(getSignInUserResponse);
     
-    getSignInRequest(accessToken).then(getSignInRequest)
-
-
   }, [pathname]);
 
   return (

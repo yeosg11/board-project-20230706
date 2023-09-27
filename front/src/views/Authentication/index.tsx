@@ -43,24 +43,23 @@ export default function Authentication() {
     //          state: 로그인 에러 상태          //
     const [error, setError] = useState<boolean>(false);
 
-    //         function: sign in response 처리 함수              /.
-     const signInResponse = (responseBody: SignInResponseDto | ResponseDto) => {
+    //          function: sign in response 처리 함수          //
+    const signInResponse = (responseBody: SignInResponseDto | ResponseDto) => {
       const { code } = responseBody;
-      if (code === 'VF') alert('모두 입력하세요.');
-      if (code ==='SF') setError(true);
-      if (code === 'DBE') alert ('데이터베이스 오류입니다.');
+      if (code === 'VF') alert('모두 입력해주세요.');
+      if (code === 'SF') setError(true);
+      if (code === 'DBE') alert('데이터베이스 오류입니다.');
       if (code !== 'SU') return;
-      
-      const {token, expirationTime}  = responseBody as SignInResponseDto;
-    
-      const now = new Date().getTime();
-      const expires = new Date(now + expirationTime*1000);
 
-      setCookie('accessToken', token, {expires, path: MAIN_PATH});
+      const { token, expirationTime } = responseBody as SignInResponseDto;
+
+      const now = new Date().getTime();
+      const expires = new Date(now + expirationTime * 1000);
+
+      setCookie('accessToken', token, { expires, path: MAIN_PATH });
       navigator(MAIN_PATH);
 
-
-     }
+    }
 
     //          event handler: 이메일 인풋 key down 이벤트 처리          //
     const onEmailKeyDownHandler = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -88,15 +87,8 @@ export default function Authentication() {
 
     //          event handler: 로그인 버튼 클릭 이벤트 처리          //
     const onSignInButtonClickHandler = () => {
-      
       const requestBody: SignInRequestDto = {email, password};
-      signInRequest(requestBody).then();
-      
-      setCookie('email', email, { path: '/' });
-
-      const user: LoginUser = { email, nickname: '주코야키', profileImage: null };
-      setUser(user);
-      navigator(MAIN_PATH);
+      signInRequest(requestBody).then(signInResponse);
     }
 
     //          event handler: 회원가입 링크 클릭 이벤트 처리          //
