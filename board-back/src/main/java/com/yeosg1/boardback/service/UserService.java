@@ -10,6 +10,5 @@ public interface UserService {
     ResponseEntity<? super GetSignInUserResponseDto> getSignInUser(String email);
     ResponseEntity<? super GetUserResponseDto> getUser(String email);
 
-
 }
 

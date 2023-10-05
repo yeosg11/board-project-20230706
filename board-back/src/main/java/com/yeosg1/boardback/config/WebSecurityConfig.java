@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -38,12 +37,13 @@ public class WebSecurityConfig {
             .httpBasic().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
             .authorizeRequests()
-            .antMatchers("/","/file/**", "/api/v1/auth/**", "/api/v1/search/**").permitAll()
-            .antMatchers(HttpMethod.GET, "/api/v1/board/**", "/api/v1/user/*","/file/image/*").permitAll()
+            .antMatchers("/", "/file/**", "/api/v1/auth/**", "/api/v1/search/**").permitAll()
+            .antMatchers(HttpMethod.GET, "/api/v1/board/**", "/api/v1/user/*", "/file/image/*").permitAll()
             .anyRequest().authenticated().and()
             .exceptionHandling().authenticationEntryPoint(new FailedAuthenticationEntryPoint());
 
-        httpSecurity.addFilterBefore(jwtAuthenticationFilter,UsernamePasswordAuthenticationFilter.class);
+        httpSecurity.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         return httpSecurity.build();
 
     }
@@ -55,11 +55,11 @@ class FailedAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException authException) throws IOException, ServletException {
-       
-        response.setContentType("applicatio/json");
+        
+        response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.getWriter().write("{ \"code\": \"AF\", \"message\": \"Authorization Failed.\" }");
+
     }
-
-
+    
 }

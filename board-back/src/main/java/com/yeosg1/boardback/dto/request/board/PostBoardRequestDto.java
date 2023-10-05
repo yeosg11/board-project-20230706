@@ -22,7 +22,5 @@ public class PostBoardRequestDto {
     
     @NotNull
     private List<String> boardImageList;
-    
-
-    
+     
 }

@@ -8,6 +8,8 @@ import com.yeosg1.boardback.entity.BoardEntity;
 @Repository
 public interface BoardRepository extends JpaRepository<BoardEntity, Integer> {
 
+    boolean existsByBoardNumber(Integer boardNumber);
+
 }
     
 

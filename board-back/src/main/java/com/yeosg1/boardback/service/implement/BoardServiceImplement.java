@@ -8,14 +8,22 @@ import org.springframework.stereotype.Service;
 
 import com.yeosg1.boardback.dto.request.board.PostBoardRequestDto;
 import com.yeosg1.boardback.dto.response.ResponseDto;
+import com.yeosg1.boardback.dto.response.board.GetBoardResponseDto;
+import com.yeosg1.boardback.dto.response.board.GetFavoriteListResponseDto;
+import com.yeosg1.boardback.dto.response.board.GetLatestBoardListResponseDto;
 import com.yeosg1.boardback.dto.response.board.PostBoardResponseDto;
+import com.yeosg1.boardback.dto.response.board.PutFavoriteResponseDto;
 import com.yeosg1.boardback.entity.BoardEntity;
 import com.yeosg1.boardback.entity.BoardImageEntity;
+import com.yeosg1.boardback.entity.BoardViewEntity;
+import com.yeosg1.boardback.entity.FavoriteEntity;
+import com.yeosg1.boardback.entity.UserEntity;
 import com.yeosg1.boardback.repository.BoardImageRepository;
 import com.yeosg1.boardback.repository.BoardRepository;
+import com.yeosg1.boardback.repository.BoardViewRepository;
+import com.yeosg1.boardback.repository.FavoriteRepository;
 import com.yeosg1.boardback.repository.UserRepository;
 import com.yeosg1.boardback.service.BoardService;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -24,6 +32,8 @@ public class BoardServiceImplement implements BoardService {
 
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
+    private final FavoriteRepository favoriteRepository; 
+    private final BoardViewRepository boardViewRepository;
     private final BoardImageRepository boardImageRepository;
 
     @Override
@@ -57,6 +67,92 @@ public class BoardServiceImplement implements BoardService {
 
     }
 
-    
+	@Override
+	public ResponseEntity<? super GetBoardResponseDto> getBoard(Integer boardNumber) {
+
+        BoardViewEntity boardViewEntity = null;
+        List<BoardImageEntity> boardImageEntities = new ArrayList<>();
+
+        try {
+
+            boardViewEntity = boardViewRepository.findByBoardNumber(boardNumber);
+            if (boardViewEntity == null) return GetBoardResponseDto.notExistBoard();
+
+            boardImageEntities = boardImageRepository.findByBoardNumber(boardNumber);
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return GetBoardResponseDto.success(boardViewEntity, boardImageEntities);
+
+	}
+
+    @Override
+    public ResponseEntity<? super GetFavoriteListResponseDto> getFavorietList(Integer boardNumber) {
+        
+        List<UserEntity> userEntities = new ArrayList<>();
+
+        try {
+
+            boolean existedBoard = boardRepository.existsByBoardNumber(boardNumber);
+            if (!existedBoard) return GetFavoriteListResponseDto.notExistBoard();
+
+            userEntities = userRepository.findByBoardFavorite(boardNumber);
+
+        } catch(Exception exception) {
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return GetFavoriteListResponseDto.success(userEntities);
+
+    }
+
+    @Override
+    public ResponseEntity<? super GetLatestBoardListResponseDto> getLatestBoardList() {
+
+        List<BoardViewEntity> boardViewEntities = new ArrayList<>();
+        
+        try {
+
+            boardViewEntities = boardViewRepository.findByOrderByWriteDatetimeDesc();
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return GetLatestBoardListResponseDto.success(boardViewEntities);
+
+    }
+
+    @Override
+    public ResponseEntity<? super PutFavoriteResponseDto> putFavorite(Integer boardNumber, String email) {
+
+        try {
+
+            boolean existedBoard = boardRepository.existsByBoardNumber(boardNumber);
+            if (!existedBoard) return PutFavoriteResponseDto.notExistBoard();
+
+            boolean existedUser = userRepository.existsByEmail(email);
+            if (!existedUser) return PutFavoriteResponseDto.notExistUser();
+
+            boolean isFavorite = favoriteRepository.existsByUserEmailAndBoardNumber(email, boardNumber);
+            
+            FavoriteEntity favoriteEntity = new FavoriteEntity(email, boardNumber);
+
+            if (isFavorite) favoriteRepository.delete(favoriteEntity);
+            else favoriteRepository.save(favoriteEntity);
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return PutFavoriteResponseDto.success();
+
+    }
     
 }
