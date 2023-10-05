@@ -1,14 +1,18 @@
 import React, { useState, useEffect, ChangeEvent, useRef } from 'react';
 import './style.css';
 import DefaultProfileImage from 'assets/default-profile-image.png';
-import { Board, CommentItem, FavoriteItem } from 'types';
+import { Board, CommentListItem, FavoriteListItem } from 'types';
 import { useNavigate, useParams } from 'react-router-dom';
 import { boardMock, commentListMock, favoriteListMock } from 'mocks';
 import { useUserStore } from 'stores';
 import { usePagination } from 'hooks';
-import CommentListItem from 'components/CommentListItem';
+import CommentItem from 'components/CommentItem';
 import Pagination from 'components/Pagination';
 import { BOARD_UPDATE_PATH, MAIN_PATH, USER_PATH } from 'constant';
+import { getBoardRequest, getFavoriteListRequest, putFavoriteRequest } from 'apis';
+import { GetBoardResponseDto, GetFavoriteListResponseDto } from 'apis/dto/response/board';
+import ResponseDto from 'apis/dto/response';
+import { useCookies } from 'react-cookie';
 
 //          component: 게시물 상세보기 페이지          //
 export default function BoardDetail() {
@@ -17,6 +21,8 @@ export default function BoardDetail() {
   const { boardNumber } = useParams();
   //          state: 로그인 유저 상태          //
   const { user } = useUserStore();
+  //          state: cookie 상태          //
+  const [cookies, setCookie] = useCookies();
   
   //          function: 네비게이트 함수          //
   const navigator = useNavigate();
@@ -29,6 +35,24 @@ export default function BoardDetail() {
     const [showMore, setShowMore] = useState<boolean>(false);
     //          state: 게시물 상태          //
     const [board, setBoard] = useState<Board | null>(null);
+
+    //          function: get board response 처리 함수          //
+    const getBoardResponse = (responseBody: GetBoardResponseDto | ResponseDto) => {
+      const { code } = responseBody;
+      if (code === 'NB') alert('존재하지 않는 게시물입니다.');
+      if (code === 'DBE') alert('데이터베이스 오류입니다.');
+      if (code !== 'SU') {
+        navigator(MAIN_PATH);
+        return;
+      }
+
+      const board: Board = { ...responseBody as GetBoardResponseDto };
+      setBoard(board);
+
+      if (!user) return;
+      const isWriter = user.email === board.writerEmail;
+      setWriter(isWriter);
+    };
 
     //          event handler: 작성자 클릭 이벤트 처리          //
     const onNicknameClickHandler = () => {
@@ -53,10 +77,12 @@ export default function BoardDetail() {
 
     //          effect: 게시물 번호 path variable이 바뀔때 마다 게시물 불러오기          //
     useEffect(() => {
-      setBoard(boardMock);
-      if (!user) return;
-      const isWriter = user.email === boardMock.writerEmail;
-      setWriter(isWriter);
+      if (!boardNumber) {
+        alert('잘못된 접근입니다.');
+        navigator(MAIN_PATH);
+        return;
+      }
+      getBoardRequest(boardNumber).then(getBoardResponse);
     }, [boardNumber]);
 
     //          render: 게시물 상세보기 상단 컴포넌트 렌더링          //
@@ -67,7 +93,7 @@ export default function BoardDetail() {
           <div className='board-detail-sub-box'>
             <div className='board-detail-write-info-box'>
               <div className='board-detail-writer-profile-image' style={{ backgroundImage: `url(${DefaultProfileImage})` }}></div>
-              <div className='board-detail-writer-nickname' onClick={onNicknameClickHandler}>{board?.nickname}</div>
+              <div className='board-detail-writer-nickname' onClick={onNicknameClickHandler}>{board?.writerNickname}</div>
               <div className='board-detail-info-divider'>{'\|'}</div>
               <div className='board-detail-write-date'>{board?.writeDatetime}</div>
             </div>
@@ -87,8 +113,8 @@ export default function BoardDetail() {
         </div>
         <div className='divider'></div>
         <div className='board-detail-top-main'>
-          <div className='board-detail-main-text'>{board?.contents}</div>
-          { board?.imageUrls.map(imageUrl => <img className='board-detail-main-image' src={imageUrl} />) }
+          <div className='board-detail-main-text'>{board?.content}</div>
+          { board?.boardImageList.map(boardImage => <img className='board-detail-main-image' src={boardImage} />) }
         </div>
       </div>
     )
@@ -100,9 +126,9 @@ export default function BoardDetail() {
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
     //          state: 좋아요 리스트 상태          //
-    const [favoriteList, setFavoriteList] = useState<FavoriteItem[]>([]);
+    const [favoriteList, setFavoriteList] = useState<FavoriteListItem[]>([]);
     //          state: 댓글 리스트 페이지네이션 상태          //
-    const {currentPageNumber, setCurrentPageNumber, currentSectionNumber, setCurrentSectionNumber, viewBoardList, viewPageNumberList, totalSection, setBoardList} = usePagination<CommentItem>(3);
+    const {currentPageNumber, setCurrentPageNumber, currentSectionNumber, setCurrentSectionNumber, viewBoardList, viewPageNumberList, totalSection, setBoardList} = usePagination<CommentListItem>(3);
     //          state: 댓글 갯수 상태          //
     const [commentsCount, setCommentsCount] = useState<number>(0);
 
@@ -115,6 +141,32 @@ export default function BoardDetail() {
     //          state: 댓글 상태          //
     const [comment, setComment] = useState<string>('');
 
+    //           function: get favorite list response 처리 함수          //
+    const getFavoriteListResponse = (responseBody: GetFavoriteListResponseDto | ResponseDto) => {
+      const { code } = responseBody;
+      if (code === 'NB') alert('존재하지 않는 게시물입니다.');
+      if (code === 'DBE') alert('데이터베이스 오류입니다.');
+      if (code !== 'SU') return;
+
+      const { favoriteList } = responseBody as GetFavoriteListResponseDto;
+      setFavoriteList(favoriteList);
+
+      const isFavorite = favoriteList.findIndex(item => item.email === user?.email) !== -1;
+      setFavorite(isFavorite);
+    };    
+    //           function: put favorite response 처리 함수          //
+    const putFavoriteResponse = (code: string) => {
+      if (code === 'VF') alert('잘못된 접근입니다.');
+      if (code === 'NU') alert('존재하지 않는 유저입니다.');
+      if (code === 'NB') alert('존재하지 않는 게시물입니다.');
+      if (code === 'AF') alert('인증에 실패했습니다.');
+      if (code === 'DBE') alert('데이터베이스 오류입니다.');
+      if (code !== 'SU') return;
+
+      if (!boardNumber) return;
+      getFavoriteListRequest(boardNumber).then(getFavoriteListResponse);
+    }
+
     //           event handler: 좋아요 박스 보기 버튼 클릭 이벤트 처리          //
     const onShowFavoriteButtonClickHandler = () => {
       setShowFavorite(!showFavorite);
@@ -125,12 +177,14 @@ export default function BoardDetail() {
     }
     //           event handler: 좋아요 버튼 클릭 이벤트 처리          //
     const onFavoriteButtonClickHandler = () => {
-      if (!user) {
+      const accessToken = cookies.accessToken;
+      if (!accessToken) {
         alert('로그인시 이용가능합니다.');
         return;
       }
-      // TODO: API 연결로 변경
-      setFavorite(!isFavorite);
+      if (!boardNumber) return;
+
+      putFavoriteRequest(boardNumber, accessToken).then(putFavoriteResponse);
     }
     //           event handler: 댓글 변경 이벤트 처리          //
     const onCommentChangeHandler = (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -144,7 +198,13 @@ export default function BoardDetail() {
 
     //          effect: 게시물 번호 path variable이 바뀔때 마다 좋아요 및 댓글 리스트 불러오기          //
     useEffect(() => {
-      setFavoriteList(favoriteListMock);
+      if (!boardNumber) {
+        alert('잘못된 접근입니다.');
+        navigator(MAIN_PATH);
+        return;
+      }
+      getFavoriteListRequest(boardNumber).then(getFavoriteListResponse);
+
       setBoardList(commentListMock);
       setCommentsCount(commentListMock.length);
     }, [boardNumber]);
@@ -193,7 +253,7 @@ export default function BoardDetail() {
             <div className='board-detail-bottom-comments-list-container'>
               <div className='board-detail-bottom-comments-list-title'>{'댓글 '}<span className='emphasis'>{commentsCount}</span></div>
               <div className='board-detail-bottom-comments-list-contents'>
-                {viewBoardList.map(commentItem => <CommentListItem commentItem={commentItem} />)}
+                {viewBoardList.map(commentItem => <CommentItem commentItem={commentItem} />)}
               </div>
             </div>
           </div>
