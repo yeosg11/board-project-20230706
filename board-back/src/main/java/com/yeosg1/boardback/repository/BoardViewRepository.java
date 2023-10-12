@@ -13,5 +13,8 @@ public interface BoardViewRepository extends JpaRepository<BoardViewEntity, Inte
     BoardViewEntity findByBoardNumber(Integer boardNumber);
 
     List<BoardViewEntity> findByOrderByWriteDatetimeDesc();
+    List<BoardViewEntity> findByWriterEmailOrderByWriteDatetimeDesc(String email);
+    List<BoardViewEntity> findTop3ByWriteDatetimeGreaterThanOrderByFavoriteCountDesc(String writeDatetime);
+    List<BoardViewEntity> findByTitleContainsOrContentContainsOrderByWriteDatetimeDesc(String title, String content);
 
 }

@@ -12,15 +12,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class PostBoardRequestDto {
-    
+public class PatchBoardRequestDto {
     @NotBlank
     private String title;
-
     @NotBlank
     private String content;
-
     @NotNull
     private List<String> boardImageList;
-
 }

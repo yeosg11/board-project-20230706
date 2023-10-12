@@ -9,24 +9,22 @@ import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name="board_image")
-@Table(name="board_image")
-public class BoardImageEntity {
-    
+@Entity(name="search_log")
+@Table(name="search_log")
+public class SearchLogEntity {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY)
     private int sequence;
-    private int boardNumber;
-    private String imageUrl;
+    private String searchWord;
+    private String relationWord;
+    private boolean relation;
 
-    public BoardImageEntity (int boardNumber, String imageUrl) {
-        this.boardNumber = boardNumber;
-        this.imageUrl = imageUrl;
+    public SearchLogEntity(String searchWord, String relationWord, boolean relation) {
+        this.searchWord = searchWord;
+        this.relationWord = relationWord;
+        this.relation = relation;
     }
-
 }

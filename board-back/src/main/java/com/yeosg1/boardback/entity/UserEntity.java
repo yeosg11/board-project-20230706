@@ -5,6 +5,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import com.yeosg1.boardback.dto.request.auth.SignUpRequestDto;
+import com.yeosg1.boardback.dto.request.user.PatchNicknameRequestDto;
+import com.yeosg1.boardback.dto.request.user.PatchProfileImageRequestDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,5 +36,13 @@ public class UserEntity {
         this.address = dto.getAddress();
         this.addressDetail = dto.getAddressDetail();
         this.agreedPersonal = dto.getAgreedPersonal();
+    }
+
+    public void patchNickname(PatchNicknameRequestDto dto) {
+        this.nickname = dto.getNickname();
+    }
+
+    public void patchProfileImage(PatchProfileImageRequestDto dto) {
+        this.profileImageUrl = dto.getProfileImage();
     }
 }

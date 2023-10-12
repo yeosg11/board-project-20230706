@@ -5,5 +5,5 @@ public interface CommentListResultSet {
     String getProfileImage();
     String getContent();
     String getWriteDatetime();
-    
 }
+

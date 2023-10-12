@@ -1,4 +1,4 @@
-package com.yeosg1.boardback.dto.request.auth;
+package com.yeosg1.boardback.dto.request.user;
 
 import javax.validation.constraints.NotBlank;
 
@@ -9,10 +9,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class SignInRequestDto {
-    @NotBlank
-    private String email;
+public class PatchNicknameRequestDto {
     
     @NotBlank
-    private String password;
+    private String nickname;
+
 }

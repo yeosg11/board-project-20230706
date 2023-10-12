@@ -14,15 +14,14 @@ public class FavoriteListItem {
     private String email;
     private String nickname;
     private String profileImage;
-    
-    public FavoriteListItem (UserEntity userEntity) {
+
+    public FavoriteListItem(UserEntity userEntity) {
         this.email = userEntity.getEmail();
         this.nickname = userEntity.getNickname();
-        this.profileImage = userEntity.getProfileImageUrl(); 
+        this.profileImage = userEntity.getProfileImageUrl();
     }
 
     public static List<FavoriteListItem> getList(List<UserEntity> userEntities) {
-
         List<FavoriteListItem> list = new ArrayList<>();
         for (UserEntity userEntity: userEntities) {
             FavoriteListItem favoriteListItem = new FavoriteListItem(userEntity);
@@ -30,5 +29,4 @@ public class FavoriteListItem {
         }
         return list;
     }
-
 }

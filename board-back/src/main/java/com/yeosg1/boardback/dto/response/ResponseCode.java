@@ -10,8 +10,10 @@ public interface ResponseCode {
     String DUPLICATED_TEL_NUMBER = "DT";
     String NOT_EXIST_USER = "NU";
     String NOT_EXIST_BOARD = "NB";
-   
+
     String SIGN_IN_FAILED = "SF";
+
+    String NO_PERMISSION = "NP";
 
     String DATABASE_ERROR = "DBE";
 
