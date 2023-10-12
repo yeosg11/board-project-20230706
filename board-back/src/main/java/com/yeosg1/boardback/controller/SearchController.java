@@ -1,4 +1,4 @@
-package com.seojihoon.boardback.controller;
+package com.yeosg1.boardback.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.seojihoon.boardback.dto.response.search.GetPopularListResponseDto;
-import com.seojihoon.boardback.dto.response.search.GetRelationListResponseDto;
-import com.seojihoon.boardback.service.SearchService;
+import com.yeosg1.boardback.dto.response.search.GetPopularListResponseDto;
+import com.yeosg1.boardback.dto.response.search.GetRelationListResponseDto;
+import com.yeosg1.boardback.service.SearchService;
 
 import lombok.RequiredArgsConstructor;
 
